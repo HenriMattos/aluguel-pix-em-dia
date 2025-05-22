@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,48 @@ import { useToast } from "@/hooks/use-toast";
 const BillingTab = () => {
   const { toast } = useToast();
   
-  const [billings, setBillings] = useState([]);
+  const [billings, setBillings] = useState([
+    {
+      id: 1,
+      tenant: "João Silva",
+      property: "Apt 101 - Centro",
+      amount: 850,
+      dueDate: "2024-03-05",
+      status: "Pago",
+      paymentDate: "2024-03-04",
+      pixSent: true
+    },
+    {
+      id: 2,
+      tenant: "Maria Santos",
+      property: "Casa - Jardins",
+      amount: 1200,
+      dueDate: "2024-03-10",
+      status: "Pendente",
+      paymentDate: null,
+      pixSent: true
+    },
+    {
+      id: 3,
+      tenant: "Pedro Costa",
+      property: "Apt 205 - Vila Nova",
+      amount: 750,
+      dueDate: "2024-03-02",
+      status: "Atrasado",
+      paymentDate: null,
+      pixSent: false
+    },
+    {
+      id: 4,
+      tenant: "Ana Paula",
+      property: "Casa - Centro",
+      amount: 950,
+      dueDate: "2024-03-15",
+      status: "Agendado",
+      paymentDate: null,
+      pixSent: false
+    }
+  ]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -147,216 +189,185 @@ const BillingTab = () => {
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
-          {billings.length === 0 ? (
-            <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-              <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-              <h3 className="text-lg font-medium text-gray-900 mb-1">Nenhuma cobrança cadastrada</h3>
-              <p className="text-gray-500 mb-4">Adicione inquilinos e propriedades para começar a gerar cobranças.</p>
-            </div>
-          ) : (
-            billings.map((billing) => (
-              <Card key={billing.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      {getStatusIcon(billing.status)}
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{billing.tenant}</h3>
-                        <p className="text-sm text-gray-600">{billing.property}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-4">
-                      <div className="text-right">
-                        <p className="font-bold text-lg">R$ {billing.amount.toLocaleString('pt-BR')}</p>
-                        <p className="text-sm text-gray-500">Venc: {new Date(billing.dueDate).toLocaleDateString('pt-BR')}</p>
-                      </div>
-                      
-                      <Badge className={getStatusColor(billing.status)}>
-                        {billing.status}
-                      </Badge>
-                      
-                      <div className="flex space-x-2">
-                        {billing.status !== "Pago" && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => generatePix(billing.id, billing.tenant)}
-                            >
-                              <QrCode className="h-4 w-4 mr-1" />
-                              PIX
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={() => sendReminder(billing.id, billing.tenant)}
-                              className={billing.pixSent ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"}
-                              disabled={billing.pixSent}
-                            >
-                              <MessageCircle className="h-4 w-4 mr-1" />
-                              {billing.pixSent ? "Enviado" : "Cobrar"}
-                            </Button>
-                          </>
-                        )}
-                      </div>
+          {billings.map((billing) => (
+            <Card key={billing.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    {getStatusIcon(billing.status)}
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{billing.tenant}</h3>
+                      <p className="text-sm text-gray-600">{billing.property}</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
+                  
+                  <div className="flex items-center space-x-4">
+                    <div className="text-right">
+                      <p className="font-bold text-lg">R$ {billing.amount.toLocaleString('pt-BR')}</p>
+                      <p className="text-sm text-gray-500">Venc: {new Date(billing.dueDate).toLocaleDateString('pt-BR')}</p>
+                    </div>
+                    
+                    <Badge className={getStatusColor(billing.status)}>
+                      {billing.status}
+                    </Badge>
+                    
+                    <div className="flex space-x-2">
+                      {billing.status !== "Pago" && (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => generatePix(billing.id, billing.tenant)}
+                          >
+                            <QrCode className="h-4 w-4 mr-1" />
+                            PIX
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => sendReminder(billing.id, billing.tenant)}
+                            className={billing.pixSent ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"}
+                            disabled={billing.pixSent}
+                          >
+                            <MessageCircle className="h-4 w-4 mr-1" />
+                            {billing.pixSent ? "Enviado" : "Cobrar"}
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </TabsContent>
 
         <TabsContent value="Pendente" className="space-y-4">
-          {pendingBillings.length === 0 ? (
-            <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-              <Clock className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-              <h3 className="text-lg font-medium text-gray-900 mb-1">Nenhuma cobrança pendente</h3>
-              <p className="text-gray-500">As cobranças pendentes aparecerão aqui.</p>
-            </div>
-          ) : (
-            pendingBillings.map((billing) => (
-              <Card key={billing.id} className="hover:shadow-md transition-shadow border-yellow-200">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      {getStatusIcon(billing.status)}
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{billing.tenant}</h3>
-                        <p className="text-sm text-gray-600">{billing.property}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-4">
-                      <div className="text-right">
-                        <p className="font-bold text-lg">R$ {billing.amount.toLocaleString('pt-BR')}</p>
-                        <p className="text-sm text-gray-500">Venc: {new Date(billing.dueDate).toLocaleDateString('pt-BR')}</p>
-                      </div>
-                      
-                      <Badge className={getStatusColor(billing.status)}>
-                        {billing.status}
-                      </Badge>
-                      
-                      <div className="flex space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => generatePix(billing.id, billing.tenant)}
-                        >
-                          <QrCode className="h-4 w-4 mr-1" />
-                          PIX
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => sendReminder(billing.id, billing.tenant)}
-                          className={billing.pixSent ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"}
-                          disabled={billing.pixSent}
-                        >
-                          <MessageCircle className="h-4 w-4 mr-1" />
-                          {billing.pixSent ? "Enviado" : "Cobrar"}
-                        </Button>
-                      </div>
+          {pendingBillings.map((billing) => (
+            <Card key={billing.id} className="hover:shadow-md transition-shadow border-yellow-200">
+              {/* Same card structure as above */}
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    {getStatusIcon(billing.status)}
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{billing.tenant}</h3>
+                      <p className="text-sm text-gray-600">{billing.property}</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
+                  
+                  <div className="flex items-center space-x-4">
+                    <div className="text-right">
+                      <p className="font-bold text-lg">R$ {billing.amount.toLocaleString('pt-BR')}</p>
+                      <p className="text-sm text-gray-500">Venc: {new Date(billing.dueDate).toLocaleDateString('pt-BR')}</p>
+                    </div>
+                    
+                    <Badge className={getStatusColor(billing.status)}>
+                      {billing.status}
+                    </Badge>
+                    
+                    <div className="flex space-x-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => generatePix(billing.id, billing.tenant)}
+                      >
+                        <QrCode className="h-4 w-4 mr-1" />
+                        PIX
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => sendReminder(billing.id, billing.tenant)}
+                        className={billing.pixSent ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"}
+                        disabled={billing.pixSent}
+                      >
+                        <MessageCircle className="h-4 w-4 mr-1" />
+                        {billing.pixSent ? "Enviado" : "Cobrar"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </TabsContent>
 
         <TabsContent value="Atrasado" className="space-y-4">
-          {overdueBillings.length === 0 ? (
-            <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-              <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-              <h3 className="text-lg font-medium text-gray-900 mb-1">Nenhuma cobrança atrasada</h3>
-              <p className="text-gray-500">As cobranças atrasadas aparecerão aqui.</p>
-            </div>
-          ) : (
-            overdueBillings.map((billing) => (
-              <Card key={billing.id} className="hover:shadow-md transition-shadow border-red-200 bg-red-50">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      {getStatusIcon(billing.status)}
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{billing.tenant}</h3>
-                        <p className="text-sm text-gray-600">{billing.property}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-4">
-                      <div className="text-right">
-                        <p className="font-bold text-lg">R$ {billing.amount.toLocaleString('pt-BR')}</p>
-                        <p className="text-sm text-red-600">Venc: {new Date(billing.dueDate).toLocaleDateString('pt-BR')}</p>
-                      </div>
-                      
-                      <Badge className={getStatusColor(billing.status)}>
-                        {billing.status}
-                      </Badge>
-                      
-                      <div className="flex space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => generatePix(billing.id, billing.tenant)}
-                        >
-                          <QrCode className="h-4 w-4 mr-1" />
-                          PIX
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => sendReminder(billing.id, billing.tenant)}
-                          className="bg-red-600 hover:bg-red-700"
-                        >
-                          <MessageCircle className="h-4 w-4 mr-1" />
-                          Cobrar Urgente
-                        </Button>
-                      </div>
+          {overdueBillings.map((billing) => (
+            <Card key={billing.id} className="hover:shadow-md transition-shadow border-red-200 bg-red-50">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    {getStatusIcon(billing.status)}
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{billing.tenant}</h3>
+                      <p className="text-sm text-gray-600">{billing.property}</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
+                  
+                  <div className="flex items-center space-x-4">
+                    <div className="text-right">
+                      <p className="font-bold text-lg">R$ {billing.amount.toLocaleString('pt-BR')}</p>
+                      <p className="text-sm text-red-600">Venc: {new Date(billing.dueDate).toLocaleDateString('pt-BR')}</p>
+                    </div>
+                    
+                    <Badge className={getStatusColor(billing.status)}>
+                      {billing.status}
+                    </Badge>
+                    
+                    <div className="flex space-x-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => generatePix(billing.id, billing.tenant)}
+                      >
+                        <QrCode className="h-4 w-4 mr-1" />
+                        PIX
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => sendReminder(billing.id, billing.tenant)}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        <MessageCircle className="h-4 w-4 mr-1" />
+                        Cobrar Urgente
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </TabsContent>
 
         <TabsContent value="Pago" className="space-y-4">
-          {paidBillings.length === 0 ? (
-            <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-              <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-              <h3 className="text-lg font-medium text-gray-900 mb-1">Nenhuma cobrança paga</h3>
-              <p className="text-gray-500">As cobranças pagas aparecerão aqui.</p>
-            </div>
-          ) : (
-            paidBillings.map((billing) => (
-              <Card key={billing.id} className="hover:shadow-md transition-shadow border-green-200 bg-green-50">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      {getStatusIcon(billing.status)}
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{billing.tenant}</h3>
-                        <p className="text-sm text-gray-600">{billing.property}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-4">
-                      <div className="text-right">
-                        <p className="font-bold text-lg text-green-700">R$ {billing.amount.toLocaleString('pt-BR')}</p>
-                        <p className="text-sm text-green-600">
-                          Pago em: {billing.paymentDate ? new Date(billing.paymentDate).toLocaleDateString('pt-BR') : '-'}
-                        </p>
-                      </div>
-                      
-                      <Badge className={getStatusColor(billing.status)}>
-                        {billing.status}
-                      </Badge>
+          {paidBillings.map((billing) => (
+            <Card key={billing.id} className="hover:shadow-md transition-shadow border-green-200 bg-green-50">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    {getStatusIcon(billing.status)}
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{billing.tenant}</h3>
+                      <p className="text-sm text-gray-600">{billing.property}</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
+                  
+                  <div className="flex items-center space-x-4">
+                    <div className="text-right">
+                      <p className="font-bold text-lg text-green-700">R$ {billing.amount.toLocaleString('pt-BR')}</p>
+                      <p className="text-sm text-green-600">
+                        Pago em: {billing.paymentDate ? new Date(billing.paymentDate).toLocaleDateString('pt-BR') : '-'}
+                      </p>
+                    </div>
+                    
+                    <Badge className={getStatusColor(billing.status)}>
+                      {billing.status}
+                    </Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </TabsContent>
       </Tabs>
     </div>
