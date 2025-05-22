@@ -176,12 +176,101 @@ const TenantsTab = () => {
           <User className="h-12 w-12 text-gray-400 mx-auto mb-3" />
           <h3 className="text-lg font-medium text-gray-900 mb-1">Nenhum inquilino cadastrado</h3>
           <p className="text-gray-500 mb-4">Adicione seu primeiro inquilino utilizando o botão acima.</p>
-          <DialogTrigger asChild>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Adicionar Inquilino
-            </Button>
-          </DialogTrigger>
+          {/* FIX: Wrap this button with a Dialog component instead of using DialogTrigger directly */}
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar Inquilino
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Cadastrar Novo Inquilino</DialogTitle>
+                <DialogDescription>
+                  Preencha as informações do inquilino
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="name2">Nome Completo</Label>
+                  <Input
+                    id="name2"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    placeholder="João Silva"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email2">E-mail</Label>
+                  <Input
+                    id="email2"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    placeholder="joao@email.com"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone2">WhatsApp</Label>
+                  <Input
+                    id="phone2"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    placeholder="(11) 99999-9999"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="property2">Imóvel</Label>
+                  <Select value={formData.property} onValueChange={(value) => setFormData({...formData, property: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um imóvel" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableProperties.map((property, index) => (
+                        <SelectItem key={index} value={property}>
+                          {property}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="rent2">Valor do Aluguel</Label>
+                    <Input
+                      id="rent2"
+                      type="number"
+                      step="0.01"
+                      value={formData.rent}
+                      onChange={(e) => setFormData({...formData, rent: e.target.value})}
+                      placeholder="850.00"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="dueDate2">Dia Vencimento</Label>
+                    <Input
+                      id="dueDate2"
+                      type="number"
+                      min="1"
+                      max="31"
+                      value={formData.dueDate}
+                      onChange={(e) => setFormData({...formData, dueDate: e.target.value})}
+                      placeholder="5"
+                      required
+                    />
+                  </div>
+                </div>
+                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
+                  Cadastrar Inquilino
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

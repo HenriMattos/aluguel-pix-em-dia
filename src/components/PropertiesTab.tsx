@@ -131,12 +131,73 @@ const PropertiesTab = () => {
           <Home className="h-12 w-12 text-gray-400 mx-auto mb-3" />
           <h3 className="text-lg font-medium text-gray-900 mb-1">Nenhum imóvel cadastrado</h3>
           <p className="text-gray-500 mb-4">Adicione seu primeiro imóvel utilizando o botão acima.</p>
-          <DialogTrigger asChild>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Adicionar Imóvel
-            </Button>
-          </DialogTrigger>
+          {/* FIX: Wrap the button in a Dialog component */}
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar Imóvel
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Cadastrar Novo Imóvel</DialogTitle>
+                <DialogDescription>
+                  Preencha as informações do imóvel
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="address2">Endereço Completo</Label>
+                  <Input
+                    id="address2"
+                    value={formData.address}
+                    onChange={(e) => setFormData({...formData, address: e.target.value})}
+                    placeholder="Rua, número, bairro"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="type2">Tipo do Imóvel</Label>
+                  <Input
+                    id="type2"
+                    value={formData.type}
+                    onChange={(e) => setFormData({...formData, type: e.target.value})}
+                    placeholder="Apartamento, Casa, Kitnet..."
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="rooms2">Quartos</Label>
+                    <Input
+                      id="rooms2"
+                      type="number"
+                      value={formData.rooms}
+                      onChange={(e) => setFormData({...formData, rooms: e.target.value})}
+                      placeholder="2"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="rent2">Valor do Aluguel</Label>
+                    <Input
+                      id="rent2"
+                      type="number"
+                      step="0.01"
+                      value={formData.rent}
+                      onChange={(e) => setFormData({...formData, rent: e.target.value})}
+                      placeholder="850.00"
+                      required
+                    />
+                  </div>
+                </div>
+                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
+                  Cadastrar Imóvel
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
