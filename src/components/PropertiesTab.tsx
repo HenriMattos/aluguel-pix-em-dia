@@ -11,35 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const PropertiesTab = () => {
   const { toast } = useToast();
-  const [properties, setProperties] = useState([
-    {
-      id: 1,
-      address: "Rua das Flores, 123 - Centro",
-      type: "Apartamento",
-      rooms: 2,
-      rent: 850,
-      status: "Ocupado",
-      tenant: "João Silva"
-    },
-    {
-      id: 2,
-      address: "Av. Principal, 456 - Jardins",
-      type: "Casa",
-      rooms: 3,
-      rent: 1200,
-      status: "Ocupado",
-      tenant: "Maria Santos"
-    },
-    {
-      id: 3,
-      address: "Rua Nova, 789 - Vila Nova",
-      type: "Apartamento",
-      rooms: 1,
-      rent: 650,
-      status: "Vago",
-      tenant: null
-    }
-  ]);
+  const [properties, setProperties] = useState([]);
 
   const [formData, setFormData] = useState({
     address: "",
@@ -52,7 +24,7 @@ const PropertiesTab = () => {
     e.preventDefault();
     
     const newProperty = {
-      id: properties.length + 1,
+      id: Date.now(), // Using timestamp as ID for uniqueness
       address: formData.address,
       type: formData.type,
       rooms: parseInt(formData.rooms),
@@ -67,6 +39,14 @@ const PropertiesTab = () => {
     toast({
       title: "Imóvel cadastrado!",
       description: "O imóvel foi adicionado com sucesso.",
+    });
+  };
+
+  const deleteProperty = (id) => {
+    setProperties(properties.filter(property => property.id !== id));
+    toast({
+      title: "Imóvel removido",
+      description: "O imóvel foi removido com sucesso.",
     });
   };
 
@@ -146,58 +126,77 @@ const PropertiesTab = () => {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {properties.map((property) => (
-          <Card key={property.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div className="flex items-center space-x-2">
-                  <Home className="h-5 w-5 text-blue-600" />
-                  <CardTitle className="text-lg">{property.type}</CardTitle>
+      {properties.length === 0 ? (
+        <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+          <Home className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+          <h3 className="text-lg font-medium text-gray-900 mb-1">Nenhum imóvel cadastrado</h3>
+          <p className="text-gray-500 mb-4">Adicione seu primeiro imóvel utilizando o botão acima.</p>
+          <DialogTrigger asChild>
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar Imóvel
+            </Button>
+          </DialogTrigger>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {properties.map((property) => (
+            <Card key={property.id} className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center space-x-2">
+                    <Home className="h-5 w-5 text-blue-600" />
+                    <CardTitle className="text-lg">{property.type}</CardTitle>
+                  </div>
+                  <Badge variant={property.status === "Ocupado" ? "default" : "secondary"}>
+                    {property.status}
+                  </Badge>
                 </div>
-                <Badge variant={property.status === "Ocupado" ? "default" : "secondary"}>
-                  {property.status}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-start space-x-2">
-                <MapPin className="h-4 w-4 text-gray-500 mt-1" />
-                <p className="text-sm text-gray-600">{property.address}</p>
-              </div>
-              
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-500">{property.rooms} quartos</span>
-                <div className="flex items-center space-x-1">
-                  <DollarSign className="h-4 w-4 text-green-600" />
-                  <span className="font-bold text-green-600">
-                    R$ {property.rent.toLocaleString('pt-BR')}
-                  </span>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-start space-x-2">
+                  <MapPin className="h-4 w-4 text-gray-500 mt-1" />
+                  <p className="text-sm text-gray-600">{property.address}</p>
                 </div>
-              </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-500">{property.rooms} quartos</span>
+                  <div className="flex items-center space-x-1">
+                    <DollarSign className="h-4 w-4 text-green-600" />
+                    <span className="font-bold text-green-600">
+                      R$ {property.rent.toLocaleString('pt-BR')}
+                    </span>
+                  </div>
+                </div>
 
-              {property.tenant && (
-                <div className="bg-blue-50 p-2 rounded">
-                  <p className="text-sm text-blue-700">
-                    <strong>Inquilino:</strong> {property.tenant}
-                  </p>
-                </div>
-              )}
+                {property.tenant && (
+                  <div className="bg-blue-50 p-2 rounded">
+                    <p className="text-sm text-blue-700">
+                      <strong>Inquilino:</strong> {property.tenant}
+                    </p>
+                  </div>
+                )}
 
-              <div className="flex space-x-2 pt-2">
-                <Button variant="outline" size="sm" className="flex-1">
-                  <Edit className="h-4 w-4 mr-1" />
-                  Editar
-                </Button>
-                <Button variant="outline" size="sm" className="flex-1 text-red-600 hover:text-red-700">
-                  <Trash2 className="h-4 w-4 mr-1" />
-                  Excluir
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                <div className="flex space-x-2 pt-2">
+                  <Button variant="outline" size="sm" className="flex-1">
+                    <Edit className="h-4 w-4 mr-1" />
+                    Editar
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    onClick={() => deleteProperty(property.id)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Excluir
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
