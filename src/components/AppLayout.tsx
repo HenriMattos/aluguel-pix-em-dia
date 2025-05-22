@@ -1,8 +1,6 @@
 
 import { Outlet } from "react-router-dom";
 import AppSidebar from "./AppSidebar";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 
 const AppLayout = () => {
   return (
@@ -13,8 +11,6 @@ const AppLayout = () => {
           <Outlet />
         </div>
       </div>
-      <Toaster />
-      <Sonner />
     </div>
   );
 };

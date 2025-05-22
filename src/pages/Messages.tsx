@@ -3,252 +3,226 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Send, MessageSquare, Save, Copy, Edit } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Save, Plus, Trash2, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Messages = () => {
   const { toast } = useToast();
-  const [templates, setTemplates] = useState([
-    {
-      id: 1,
-      name: "Lembrete de Aluguel",
-      message: "Olá {nome}, lembro que o aluguel no valor de R$ {valor} vence no dia {vencimento}. Para sua comodidade, segue o link para pagamento via PIX: {link_pix}. Obrigado!"
-    },
-    {
-      id: 2,
-      name: "Confirmação de Pagamento",
-      message: "Olá {nome}, confirmamos o recebimento do pagamento de aluguel no valor de R$ {valor} referente ao imóvel {imovel}. Obrigado pela pontualidade!"
-    },
-    {
-      id: 3,
-      name: "Aluguel Atrasado",
-      message: "Olá {nome}, notamos que o aluguel no valor de R$ {valor} vencido no dia {vencimento} ainda não foi pago. Por favor, regularize sua situação ou entre em contato caso precise de algum prazo adicional."
-    }
-  ]);
-
-  const [newTemplate, setNewTemplate] = useState({
-    name: "",
-    message: ""
+  const [activeTemplate, setActiveTemplate] = useState("reminder");
+  const [templates, setTemplates] = useState({
+    reminder: "Olá {inquilino}, este é um lembrete amigável de que seu aluguel no valor de R$ {valor} vence em {dias} dias. Para sua comodidade, o código PIX é: {pix}. Obrigado!",
+    late: "Olá {inquilino}, notamos que o pagamento do aluguel no valor de R$ {valor} está atrasado há {dias} dias. Por favor, realize o pagamento o mais breve possível através do PIX: {pix}. Se já pagou, por favor desconsidere esta mensagem.",
+    receipt: "Olá {inquilino}, recebemos seu pagamento de aluguel no valor de R$ {valor}. Obrigado pela pontualidade! Seu recibo já está disponível.",
+    welcome: "Olá {inquilino}, seja bem-vindo ao seu novo lar! Estamos felizes em tê-lo como inquilino. Seu primeiro aluguel no valor de R$ {valor} vence em {data}. Para qualquer dúvida, estamos à disposição."
   });
 
-  const [editingTemplate, setEditingTemplate] = useState<null | {
-    id: number;
-    name: string;
-    message: string;
-  }>(null);
+  const [currentTemplate, setCurrentTemplate] = useState("");
 
-  const handleSaveTemplate = () => {
-    if (!newTemplate.name || !newTemplate.message) {
-      toast({
-        title: "Erro",
-        description: "Preencha todos os campos do template",
-        variant: "destructive"
-      });
-      return;
-    }
+  const handleEditTemplate = (template) => {
+    setCurrentTemplate(templates[template]);
+    setActiveTemplate(template);
+  };
 
-    setTemplates([
+  const saveTemplate = () => {
+    setTemplates({
       ...templates,
-      {
-        id: templates.length + 1,
-        name: newTemplate.name,
-        message: newTemplate.message
-      }
-    ]);
-
-    setNewTemplate({ name: "", message: "" });
-
-    toast({
-      title: "Template Salvo",
-      description: "Seu template de mensagem foi salvo com sucesso",
+      [activeTemplate]: currentTemplate
     });
-  };
-
-  const handleUpdateTemplate = () => {
-    if (!editingTemplate) return;
-
-    setTemplates(templates.map(template => 
-      template.id === editingTemplate.id ? editingTemplate : template
-    ));
-
-    setEditingTemplate(null);
-
-    toast({
-      title: "Template Atualizado",
-      description: "Seu template de mensagem foi atualizado com sucesso",
-    });
-  };
-
-  const handleDeleteTemplate = (id: number) => {
-    setTemplates(templates.filter(template => template.id !== id));
     
     toast({
-      title: "Template Removido",
-      description: "O template de mensagem foi removido com sucesso",
+      title: "Modelo salvo",
+      description: "Seu modelo de mensagem foi salvo com sucesso.",
     });
   };
 
-  const variableList = [
-    { name: "{nome}", description: "Nome do inquilino" },
-    { name: "{valor}", description: "Valor do aluguel" },
-    { name: "{vencimento}", description: "Data de vencimento" },
-    { name: "{imovel}", description: "Endereço do imóvel" },
-    { name: "{link_pix}", description: "Link para pagamento PIX" }
-  ];
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    
+    toast({
+      title: "Copiado!",
+      description: "Texto copiado para a área de transferência.",
+    });
+  };
+
+  const previewMessage = (template) => {
+    // Simula a substituição de variáveis
+    let message = templates[template]
+      .replace("{inquilino}", "João Silva")
+      .replace("{valor}", "850,00")
+      .replace("{dias}", "3")
+      .replace("{data}", "05/06/2024")
+      .replace("{pix}", "exemplo@email.com");
+    
+    return message;
+  };
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Mensagens Automáticas</h2>
-        <p className="text-gray-600">Configure as mensagens enviadas aos inquilinos</p>
+        <h2 className="text-2xl font-bold text-gray-900">Modelos de Mensagem</h2>
+        <p className="text-gray-600">Personalize as mensagens enviadas aos seus inquilinos</p>
       </div>
 
-      <Tabs defaultValue="templates" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="templates">Templates</TabsTrigger>
-          <TabsTrigger value="new">Novo Template</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="templates" className="space-y-4">
-          {templates.map((template) => (
-            <Card key={template.id}>
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-lg">{template.name}</CardTitle>
-                    <CardDescription>Template de mensagem</CardDescription>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setEditingTemplate(template)}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      Editar
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="text-red-600"
-                      onClick={() => handleDeleteTemplate(template.id)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Excluir
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <p className="text-sm whitespace-pre-line">{template.message}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-
-          {templates.length === 0 && (
-            <div className="text-center py-8">
-              <MessageCircle className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-              <h3 className="text-lg font-medium text-gray-600">Nenhum template cadastrado</h3>
-              <p className="text-gray-500 mt-1">Adicione templates para mensagens automáticas</p>
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="new">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Novo Template de Mensagem</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5" />
+                <span>Modelos Disponíveis</span>
+              </CardTitle>
               <CardDescription>
-                Crie um novo modelo para mensagens automáticas
+                Selecione um modelo para editar
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="name">Nome do Template</Label>
-                <Input 
-                  id="name" 
-                  placeholder="Ex: Lembrete de Aluguel"
-                  value={newTemplate.name}
-                  onChange={(e) => setNewTemplate({...newTemplate, name: e.target.value})}
-                />
-              </div>
-              <div>
-                <Label htmlFor="message">Mensagem</Label>
-                <Textarea 
-                  id="message" 
-                  placeholder="Digite a mensagem aqui..."
-                  rows={5}
-                  value={newTemplate.message}
-                  onChange={(e) => setNewTemplate({...newTemplate, message: e.target.value})}
-                />
-                <p className="text-sm text-gray-500 mt-1">
-                  Use as variáveis abaixo para personalizar a mensagem.
-                </p>
-              </div>
-
-              <div className="bg-blue-50 p-3 rounded-lg">
-                <p className="text-sm font-medium text-blue-700 mb-2">Variáveis disponíveis:</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {variableList.map((variable, index) => (
-                    <div key={index} className="text-xs bg-blue-100 text-blue-800 rounded p-2">
-                      <span className="font-mono font-bold">{variable.name}</span>
-                      <span className="block mt-1">{variable.description}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <Button onClick={handleSaveTemplate} className="w-full">
-                <Save className="h-4 w-4 mr-2" />
-                Salvar Template
+            <CardContent className="space-y-3">
+              <Button 
+                variant={activeTemplate === "reminder" ? "default" : "outline"} 
+                onClick={() => handleEditTemplate("reminder")}
+                className="w-full justify-start"
+              >
+                Lembrete de Vencimento
+              </Button>
+              <Button 
+                variant={activeTemplate === "late" ? "default" : "outline"} 
+                onClick={() => handleEditTemplate("late")}
+                className="w-full justify-start"
+              >
+                Cobrança de Atraso
+              </Button>
+              <Button 
+                variant={activeTemplate === "receipt" ? "default" : "outline"} 
+                onClick={() => handleEditTemplate("receipt")}
+                className="w-full justify-start"
+              >
+                Confirmação de Pagamento
+              </Button>
+              <Button 
+                variant={activeTemplate === "welcome" ? "default" : "outline"} 
+                onClick={() => handleEditTemplate("welcome")}
+                className="w-full justify-start"
+              >
+                Boas-vindas ao Inquilino
               </Button>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
 
-      {/* Edit Template Dialog */}
-      {editingTemplate && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-full max-w-md p-6">
-            <h3 className="text-lg font-semibold mb-4">Editar Template</h3>
-            
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="edit-name">Nome do Template</Label>
-                <Input 
-                  id="edit-name" 
-                  value={editingTemplate.name}
-                  onChange={(e) => setEditingTemplate({...editingTemplate, name: e.target.value})}
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-message">Mensagem</Label>
-                <Textarea 
-                  id="edit-message" 
-                  rows={5}
-                  value={editingTemplate.message}
-                  onChange={(e) => setEditingTemplate({...editingTemplate, message: e.target.value})}
-                />
-              </div>
-              
-              <div className="flex space-x-3 pt-2">
-                <Button variant="outline" className="flex-1" onClick={() => setEditingTemplate(null)}>
-                  Cancelar
-                </Button>
-                <Button className="flex-1" onClick={handleUpdateTemplate}>
-                  Atualizar
-                </Button>
-              </div>
-            </div>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Variáveis Disponíveis</CardTitle>
+              <CardDescription>
+                Insira estas variáveis em seus modelos
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm">
+                <li className="flex justify-between">
+                  <code className="bg-gray-100 px-2 py-1 rounded">{"{inquilino}"}</code>
+                  <span className="text-gray-600">Nome do inquilino</span>
+                </li>
+                <li className="flex justify-between">
+                  <code className="bg-gray-100 px-2 py-1 rounded">{"{valor}"}</code>
+                  <span className="text-gray-600">Valor do aluguel</span>
+                </li>
+                <li className="flex justify-between">
+                  <code className="bg-gray-100 px-2 py-1 rounded">{"{dias}"}</code>
+                  <span className="text-gray-600">Dias até vencimento ou atraso</span>
+                </li>
+                <li className="flex justify-between">
+                  <code className="bg-gray-100 px-2 py-1 rounded">{"{data}"}</code>
+                  <span className="text-gray-600">Data de vencimento</span>
+                </li>
+                <li className="flex justify-between">
+                  <code className="bg-gray-100 px-2 py-1 rounded">{"{pix}"}</code>
+                  <span className="text-gray-600">Chave PIX</span>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
         </div>
-      )}
+
+        <div className="lg:col-span-2">
+          <Tabs defaultValue="edit" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="edit">Editar</TabsTrigger>
+              <TabsTrigger value="preview">Pré-visualizar</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="edit">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Edit className="h-5 w-5" />
+                    <span>Editar Modelo</span>
+                  </CardTitle>
+                  <CardDescription>
+                    {activeTemplate === "reminder" && "Mensagem enviada antes do vencimento"}
+                    {activeTemplate === "late" && "Mensagem enviada quando o pagamento está atrasado"}
+                    {activeTemplate === "receipt" && "Confirmação após o pagamento recebido"}
+                    {activeTemplate === "welcome" && "Boas-vindas para novos inquilinos"}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Textarea 
+                    value={currentTemplate || templates[activeTemplate]} 
+                    onChange={(e) => setCurrentTemplate(e.target.value)}
+                    className="min-h-[200px]"
+                  />
+                  <div className="flex space-x-2">
+                    <Button onClick={saveTemplate} className="bg-blue-600 hover:bg-blue-700">
+                      <Save className="h-4 w-4 mr-2" />
+                      Salvar Modelo
+                    </Button>
+                    <Button variant="outline" onClick={() => setCurrentTemplate(templates[activeTemplate])}>
+                      Restaurar Original
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="preview">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Pré-visualização</CardTitle>
+                  <CardDescription>
+                    Veja como a mensagem será exibida para o inquilino
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="border rounded-lg p-4 bg-green-50">
+                    <div className="flex items-center mb-2">
+                      <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
+                        <MessageSquare className="h-5 w-5 text-white" />
+                      </div>
+                      <div className="ml-2">
+                        <p className="font-bold">Mensagem WhatsApp</p>
+                        <p className="text-sm text-gray-600">Para: João Silva</p>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white p-3 rounded-lg border">
+                      <p className="whitespace-pre-line">{previewMessage(activeTemplate)}</p>
+                    </div>
+                  </div>
+                  
+                  <Button variant="outline" onClick={() => copyToClipboard(previewMessage(activeTemplate))}>
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copiar Mensagem
+                  </Button>
+                  
+                  <Button className="bg-green-600 hover:bg-green-700 w-full">
+                    <Send className="h-4 w-4 mr-2" />
+                    Testar Envio
+                  </Button>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
     </div>
   );
 };

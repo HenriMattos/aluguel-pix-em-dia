@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
-import { Settings as SettingsIcon, Save, MessageCircle, Bell, Smartphone, CreditCard } from "lucide-react";
+import { Settings as SettingsIcon, Save, MessageCircle, Bell, Smartphone, CreditCard, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Settings = () => {
@@ -39,7 +39,9 @@ const Settings = () => {
   const [whatsappSettings, setWhatsappSettings] = useState({
     useWhatsapp: true,
     phoneNumber: "(11) 99999-9999",
-    connectWhatsappWeb: false
+    connectWhatsappWeb: false,
+    isConnecting: false,
+    connectionTested: false
   });
 
   const handleSaveGeneral = () => {
@@ -68,6 +70,28 @@ const Settings = () => {
       title: "Configurações salvas",
       description: "As configurações do WhatsApp foram atualizadas com sucesso.",
     });
+  };
+
+  const testWhatsAppConnection = () => {
+    setWhatsappSettings({
+      ...whatsappSettings,
+      isConnecting: true
+    });
+    
+    // Simula teste de conexão
+    setTimeout(() => {
+      setWhatsappSettings({
+        ...whatsappSettings,
+        connectWhatsappWeb: true,
+        isConnecting: false,
+        connectionTested: true
+      });
+      
+      toast({
+        title: "WhatsApp conectado",
+        description: "Conexão com WhatsApp realizada com sucesso!",
+      });
+    }, 2000);
   };
 
   return (
@@ -130,7 +154,7 @@ const Settings = () => {
                   onChange={(e) => setGeneralSettings({...generalSettings, phone: e.target.value})}
                 />
               </div>
-              <Button onClick={handleSaveGeneral}>
+              <Button onClick={handleSaveGeneral} className="bg-blue-600 hover:bg-blue-700">
                 <Save className="h-4 w-4 mr-2" />
                 Salvar Configurações
               </Button>
@@ -195,7 +219,7 @@ const Settings = () => {
               </div>
 
               <div className="pt-2">
-                <Button onClick={handleSaveNotifications}>
+                <Button onClick={handleSaveNotifications} className="bg-blue-600 hover:bg-blue-700">
                   <Save className="h-4 w-4 mr-2" />
                   Salvar Configurações
                 </Button>
@@ -265,7 +289,7 @@ const Settings = () => {
                   />
                 </div>
               </div>
-              <Button onClick={handleSavePayment}>
+              <Button onClick={handleSavePayment} className="bg-blue-600 hover:bg-blue-700">
                 <Save className="h-4 w-4 mr-2" />
                 Salvar Configurações
               </Button>
@@ -307,31 +331,50 @@ const Settings = () => {
                 </p>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="connectWhatsappWeb" className="cursor-pointer">Conectar com WhatsApp Web</Label>
-                  <p className="text-sm text-gray-500">
-                    Conecte ao WhatsApp Web para envio automatizado de mensagens
-                  </p>
+              <div className="flex flex-col space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="connectWhatsappWeb" className="cursor-pointer">Conectar com WhatsApp Web</Label>
+                    <p className="text-sm text-gray-500">
+                      Conecte ao WhatsApp Web para envio automatizado de mensagens
+                    </p>
+                  </div>
+                  <Switch 
+                    id="connectWhatsappWeb" 
+                    checked={whatsappSettings.connectWhatsappWeb}
+                    onCheckedChange={(value) => {
+                      if (value === true) {
+                        testWhatsAppConnection();
+                      } else {
+                        setWhatsappSettings({...whatsappSettings, connectWhatsappWeb: false, connectionTested: false});
+                      }
+                    }}
+                    disabled={!whatsappSettings.useWhatsapp}
+                  />
                 </div>
-                <Switch 
-                  id="connectWhatsappWeb" 
-                  checked={whatsappSettings.connectWhatsappWeb}
-                  onCheckedChange={(value) => setWhatsappSettings({...whatsappSettings, connectWhatsappWeb: value})}
-                  disabled={!whatsappSettings.useWhatsapp}
-                />
+                
+                {whatsappSettings.isConnecting && (
+                  <div className="flex items-center space-x-3 text-blue-600">
+                    <div className="h-4 w-4 border-2 border-blue-600 border-t-transparent animate-spin rounded-full"></div>
+                    <span>Testando conexão com WhatsApp...</span>
+                  </div>
+                )}
               </div>
 
-              {whatsappSettings.connectWhatsappWeb && (
+              {whatsappSettings.connectWhatsappWeb && whatsappSettings.connectionTested && (
                 <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                  <p className="text-sm text-green-700">
-                    <strong>WhatsApp conectado!</strong> Seu WhatsApp está conectado e pronto para enviar mensagens automaticamente.
+                  <div className="flex items-center">
+                    <Check className="h-5 w-5 text-green-600 mr-2" />
+                    <p className="text-green-700 font-medium">WhatsApp conectado!</p>
+                  </div>
+                  <p className="text-sm text-green-700 mt-1">
+                    Seu WhatsApp está conectado e pronto para enviar mensagens automaticamente.
                   </p>
                   <Button 
                     variant="outline" 
                     size="sm" 
                     className="mt-2"
-                    onClick={() => setWhatsappSettings({...whatsappSettings, connectWhatsappWeb: false})}
+                    onClick={() => setWhatsappSettings({...whatsappSettings, connectWhatsappWeb: false, connectionTested: false})}
                   >
                     Desconectar
                   </Button>
@@ -347,7 +390,7 @@ const Settings = () => {
                 </ul>
               </div>
 
-              <Button onClick={handleSaveWhatsapp}>
+              <Button onClick={handleSaveWhatsapp} className="bg-blue-600 hover:bg-blue-700">
                 <Save className="h-4 w-4 mr-2" />
                 Salvar Configurações
               </Button>
